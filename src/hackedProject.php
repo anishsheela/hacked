@@ -49,8 +49,17 @@ class hackedProject {
    * Constructor.
    */
   function __construct($name) {
+    // Identify the project.
     $this->name = $name;
-    $this->remote_files_downloader = new hackedProjectWebFilesDownloader($this);
+    $this->identify_project();
+
+    // Choose an appropriate downloader.
+    if ($this->isDevVersion()) {
+      $this->remote_files_downloader = new hackedProjectWebDevDownloader($this);
+    }
+    else {
+      $this->remote_files_downloader = new hackedProjectWebFilesDownloader($this);
+    }
   }
 
   /**
@@ -108,6 +117,20 @@ class hackedProject {
       $message = $this->t('Could not identify project: @name', array('@name' => $this->name));
       \Drupal::logger('hacked')->warning($message->render());
     }
+  }
+
+  /**
+   * Determines if the project is a development version or has an explicit release.
+   *
+   * @return boolean
+   *   TRUE if the project is a dev release; FALSE otherwise.
+   */
+  function isDevVersion() {
+    // Grab the version string.
+    $version = $this->existing_version;
+
+    // Assume we have a dev version if the string ends with "-dev".
+    return (substr_compare($version, '-dev', -4, 4) === 0) ? TRUE : FALSE;
   }
 
   /**
