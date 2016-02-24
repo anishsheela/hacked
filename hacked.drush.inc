@@ -1,75 +1,72 @@
 <?php
 
-
 /**
  * @file
- *   Hacked drush command.
+ * Hacked drush command.
  *
- *   Enables drush support for the Hacked! module.
+ * Enables drush support for the Hacked! module.
  */
 
+use Drupal\hacked\hackedProject;
+
 /**
- * Implementation of hook_drush_help().
+ * Implements hook_drush_help().
  */
 function hacked_drush_help($section) {
   switch ($section) {
     case 'drush:hacked-list-projects':
       return dt('List projects and their hacked/unhacked status.');
+
     case 'drush:hacked-details':
       return dt('Show details of the files in one project, and the hacked/unhacked status of those files.');
+
     case 'drush:hacked-diff':
       return dt('Output a unified diff of the specified project.');
-
   }
 }
 
 /**
- * Implementation of hook_drush_command().
+ * Implements hook_drush_command().
  *
  * @See drush_parse_command() for a list of recognized keys.
- *
- * @return
- *   An associative array describing your command(s).
  */
 function hacked_drush_command() {
-  $items = array();
+  $items['hacked-list-projects'] = [
+    'description'         => "List all projects that can be analysed by Hacked! ",
+    'drupal dependencies' => ['hacked'],
+    'options'             => [
+      'force-rebuild' => 'Rebuild the Hacked! report instead of getting a cached version.',
+    ],
+    'aliases'             => ['hlp'],
+  ];
 
-  $items['hacked-list-projects'] = array(
-    'description' => "List all projects that can be analysed by Hacked! ",
-    'drupal dependencies' => array('hacked'),
-    'options' => array(
-      'force-rebuild' => 'Rebuild the Hacked! report instead of getting a cached version.'
-    ),
-    'aliases' => array('hlp'),
-  );
+  $items['hacked-lock-modified'] = [
+    'description'         => "Lock all projects that Hacked! detects are modified, so that drush pm-updatecode will not touch them. (drush-4.x+ only)",
+    'drupal dependencies' => ['hacked'],
+  ];
 
-  $items['hacked-lock-modified'] = array(
-    'description' => "Lock all projects that Hacked! detects are modified, so that drush pm-updatecode will not touch them. (drush-4.x+ only)",
-    'drupal dependencies' => array('hacked'),
-  );
-
-  $items['hacked-details'] = array(
-    'description' => "Show the Hacked! report about a specific project.",
-    'drupal dependencies' => array('hacked'),
-    'arguments' => array(
+  $items['hacked-details'] = [
+    'description'         => "Show the Hacked! report about a specific project.",
+    'drupal dependencies' => ['hacked'],
+    'arguments'           => [
       'project' => 'The machine name of the project to report on.',
-    ),
-    'options' => array(
+    ],
+    'options'             => [
       'include-unchanged' => 'Show the files that are unchanged too.',
-    ),
-    'aliases' => array('hd'),
-  );
+    ],
+    'aliases'             => ['hd'],
+  ];
 
-  $items['hacked-diff'] = array(
-    'description' => "Output a unified diff of the project specified.",
-    'drupal dependencies' => array('hacked'),
-    'arguments' => array(
+  $items['hacked-diff'] = [
+    'description'         => "Output a unified diff of the project specified.",
+    'drupal dependencies' => ['hacked'],
+    'arguments'           => [
       'project' => 'The machine name of the project to report on.',
-    ),
-    'options' => array(
-      'diff-options' => 'Command line options to pass through to the diff command.'
-    ),
-  );
+    ],
+    'options'             => [
+      'diff-options' => 'Command line options to pass through to the diff command.',
+    ],
+  ];
 
   return $items;
 }
@@ -79,8 +76,13 @@ function hacked_drush_command() {
  *
  * WARNING: This function can invoke a batch process and end your current page.
  * So you'll want to be very careful if you call this!
+ *
+ * @param array $projects
+ *   An array of Drupal projects.
+ * @param bool|FALSE $force
+ *   If TRUE, force rebuild of project data.
  */
-function hacked_calculate_project_data_drush($projects, $force = FALSE, $redirect = NULL) {
+function hacked_calculate_project_data_drush($projects, $force = FALSE) {
   include_once DRUPAL_ROOT . '/core/includes/batch.inc';
 
   // Try to get the report form cache if we can.
@@ -90,20 +92,20 @@ function hacked_calculate_project_data_drush($projects, $force = FALSE, $redirec
   }
 
   // Enter a batch to build the report.
-  $operations = array();
+  $operations = [];
   foreach ($projects as $project) {
-    $operations[] = array(
+    $operations[] = [
       'hacked_build_report_batch',
-      array($project['name']),
-    );
+      [$project['name']],
+    ];
   }
 
-  $batch = array(
+  $batch = [
     'operations' => $operations,
-    'finished' => 'hacked_build_report_batch_finished_drush',
-    'file' => drupal_get_path('module', 'hacked') . '/hacked.report.inc',
-    'title' => t('Building report'),
-  );
+    'finished'   => 'hacked_build_report_batch_finished_drush',
+    'file'       => drupal_get_path('module', 'hacked') . '/hacked.report.inc',
+    'title'      => t('Building report'),
+  ];
 
   drush_print('Rebuilding Hacked! report');
   batch_set($batch);
@@ -121,13 +123,19 @@ function hacked_calculate_project_data_drush($projects, $force = FALSE, $redirec
 
 /**
  * Completion callback for the report batch.
+ *
+ * @param bool $success
+ *   Boolean value of batch success.
+ * @param array $results
+ *   An array of batch results.
  */
-function hacked_build_report_batch_finished_drush($success, $results, $operations) {
+function hacked_build_report_batch_finished_drush($success, $results) {
   if ($success) {
     // Sort the results.
     usort($results['report'], '_hacked_project_report_sort_by_status');
     // Store them.
-    \Drupal::cache(HACKED_CACHE_TABLE)->set('hacked:drush:full-report', $results['report'], strtotime('+1 day'));
+    \Drupal::cache(HACKED_CACHE_TABLE)
+      ->set('hacked:drush:full-report', $results['report'], strtotime('+1 day'));
   }
 }
 
@@ -135,7 +143,6 @@ function hacked_build_report_batch_finished_drush($success, $results, $operation
  * Drush command callback that shows the listing of changed/unchanged projects.
  */
 function drush_hacked_list_projects() {
-
   // Go get the data:
   module_load_include('inc', 'update', 'update.report');
   if ($available = update_get_available(TRUE)) {
@@ -144,29 +151,31 @@ function drush_hacked_list_projects() {
     $force_rebuild = drush_get_option('force-rebuild', FALSE);
     $projects = hacked_calculate_project_data_drush($data, $force_rebuild);
     // Now print the data using drush:
-    $rows[] = array(
+    $rows[] = [
       dt('Title'),
       dt('Name'),
       dt('Version'),
       dt('Status'),
       dt('Changed'),
       dt('Deleted'),
-    );
+    ];
     foreach ($projects as $project) {
-      $row = array(
+      $row = [
         $project['title'],
         $project['name'],
-        $project['existing_version']
-      );
+        $project['existing_version'],
+      ];
 
       // Now add the status:
       switch ($project['status']) {
         case HACKED_STATUS_UNHACKED:
           $row[] = dt('Unchanged');
           break;
+
         case HACKED_STATUS_HACKED:
           $row[] = t('Changed');
           break;
+
         case HACKED_STATUS_UNCHECKED:
         default:
           $row[] = t('Unchecked');
@@ -175,7 +184,6 @@ function drush_hacked_list_projects() {
 
       $row[] = $project['counts']['different'];
       $row[] = $project['counts']['missing'];
-
 
       $rows[] = $row;
     }
@@ -186,8 +194,7 @@ function drush_hacked_list_projects() {
 }
 
 /**
- * Lock all of the modified files so that pm-updatecode will not
- * touch them.
+ * Lock all of the modified files so that pm-updatecode will not touch them.
  */
 function drush_hacked_lock_modified() {
   $drupal_root = drush_get_context('DRUSH_DRUPAL_ROOT');
@@ -198,26 +205,27 @@ function drush_hacked_lock_modified() {
     $projects = hacked_calculate_project_data_drush($data, TRUE);
 
     foreach ($projects as $project) {
-      $row = array(
+      $row = [
         empty($project['title']) ? $project['name'] : $project['title'],
         $project['name'],
-        $project['existing_version']
-      );
+        $project['existing_version'],
+      ];
 
       // Lock the file if it is not already locked.
       switch ($project['status']) {
         case HACKED_STATUS_HACKED:
           $project_ob = NULL;
-          $project_ob = new Drupal\hacked\hackedProject($project['project_name']);
+          $project_ob = new hackedProject($project['project_name']);
           $lockfile = $project_ob->file_get_location('local', '.drush-lock-update');
           if (!file_exists($lockfile)) {
             drush_op('file_put_contents', $lockfile, dt("Locked: modified."));
-            drush_print(dt("Locked: @project", array('@project' => $project['name'])));
+            drush_print(dt("Locked: @project", ['@project' => $project['name']]));
           }
           else {
-            drush_print(dt("@project is modified and already locked", array('@project' => $project['name'])));
+            drush_print(dt("@project is modified and already locked", ['@project' => $project['name']]));
           }
           break;
+
         case HACKED_STATUS_UNHACKED:
         case HACKED_STATUS_UNCHECKED:
         default:
@@ -228,7 +236,7 @@ function drush_hacked_lock_modified() {
 }
 
 /**
- * Add a --lock-modified flag to pm-updatecode
+ * Add a --lock-modified flag to pm-updatecode.
  */
 function drush_hacked_pre_pm_updatecode() {
   if (drush_get_option('lock-modified')) {
@@ -239,7 +247,9 @@ function drush_hacked_pre_pm_updatecode() {
 }
 
 /**
- * Add --lock-modified to the pm-updatecode and pm-update help
+ * Implements hook_drush_help_alter().
+ *
+ * Add --lock-modified to the pm-updatecode and pm-update help.
  */
 function hacked_drush_help_alter(&$command) {
   if (($command['command'] == 'pm-updatecode') || ($command['command'] == 'pm-update')) {
@@ -249,6 +259,9 @@ function hacked_drush_help_alter(&$command) {
 
 /**
  * Validate hook for the hacked_details drush command.
+ *
+ * @param string $short_name
+ *   The project short name.
  */
 function drush_hacked_details_validate($short_name = '') {
   return drush_hacked_drush_command_validate($short_name);
@@ -256,65 +269,73 @@ function drush_hacked_details_validate($short_name = '') {
 
 /**
  * Validate hook for the hacked drush commands that need a project.
+ *
+ * @param string $short_name
+ *   The project short name.
  */
 function drush_hacked_drush_command_validate($short_name = '') {
   if (empty($short_name)) {
-    return drush_set_error('HACKED_PROJECT_NOT_FOUND', dt('A valid project must be specified', array('@project' => $short_name)));
+    return drush_set_error('HACKED_PROJECT_NOT_FOUND', dt('A valid project must be specified', ['@project' => $short_name]));
   }
 
-  $project = new Drupal\hacked\hackedProject($short_name);
+  $project = new hackedProject($short_name);
   $project->identify_project();
   if (!$project->project_identified) {
-    return drush_set_error('HACKED_PROJECT_NOT_FOUND', dt('Could not find project: @project', array('@project' => $short_name)));
+    return drush_set_error('HACKED_PROJECT_NOT_FOUND', dt('Could not find project: @project', ['@project' => $short_name]));
   }
   $project = NULL;
 }
 
 /**
- * Drush command callback that shows the list of changes/unchanged files in a project.
+ * Drush callback that shows the list of changes/unchanged files in a project.
  *
  * You may specify the --include-unchanged option to show unchanged files too,
  * otherwise just the changed and deleted files are shown.
+ *
+ * @param string $short_name
+ *   The project short name.
  */
 function drush_hacked_details($short_name) {
-  $project = new Drupal\hacked\hackedProject($short_name);
+  $project = new hackedProject($short_name);
   $report = $project->compute_details();
 
-  drush_print(dt('Details for project: @name', array('@name' => $project->title())));
-  drush_print(dt('Total files: @total_files, files changed: @changed_files, deleted files: @deleted_files', array(
-    '@total_files' => count($report['files']),
+  drush_print(dt('Details for project: @name', ['@name' => $project->title()]));
+  drush_print(dt('Total files: @total_files, files changed: @changed_files, deleted files: @deleted_files', [
+    '@total_files'   => count($report['files']),
     '@changed_files' => $report['counts']['different'],
     '@deleted_files' => $report['counts']['missing'],
-  )));
+  ]));
   drush_print('');
 
   drush_print(dt('Detailed results:'));
   // Sort the results:
   arsort($report['files']);
 
-  $rows[] = array(
+  $rows[] = [
     dt('Status'),
     dt('File'),
-  );
+  ];
   $show_unchanged = drush_get_option('include-unchanged', FALSE);
   foreach ($report['files'] as $file => $status) {
     if (!$show_unchanged && $status == HACKED_STATUS_UNHACKED) {
       continue;
     }
-    $row = array(
-    );
+    $row = [];
 
     // Now add the status:
     switch ($status) {
       case HACKED_STATUS_UNHACKED:
         $row[] = dt('Unchanged');
         break;
+
       case HACKED_STATUS_HACKED:
         $row[] = t('Changed');
         break;
+
       case HACKED_STATUS_DELETED:
         $row[] = t('Deleted');
         break;
+
       case HACKED_STATUS_UNCHECKED:
       default:
         $row[] = t('Unchecked');
@@ -322,30 +343,33 @@ function drush_hacked_details($short_name) {
     }
 
     $row[] = $file;
-
-
     $rows[] = $row;
   }
+
   drush_print_table($rows, TRUE);
-
-
 }
 
 /**
  * Validate hook for the hacked_diff drush command.
+ *
+ * @param string $short_name
+ *   The project short name.
  */
 function drush_hacked_diff_validate($short_name = '') {
   return drush_hacked_drush_command_validate($short_name);
 }
 
 /**
- * Drush command callback that shows the list of changes/unchanged files in a project.
+ * Drush callback that shows the list of changes/unchanged files in a project.
  *
  * You may specify the --include-unchanged option to show unchanged files too,
  * otherwise just the changed and deleted files are shown.
+ *
+ * @param string $short_name
+ *   The project short name.
  */
 function drush_hacked_diff($short_name) {
-  $project = new Drupal\hacked\hackedProject($short_name);
+  $project = new hackedProject($short_name);
 
   $local_location = $project->file_get_location('local', '');
   $clean_location = $project->file_get_location('remote', '');
@@ -379,7 +403,5 @@ function drush_hacked_diff($short_name) {
     }
 
     drush_print($line);
-
   }
-
 }
