@@ -81,10 +81,10 @@ function hacked_drush_command() {
  * So you'll want to be very careful if you call this!
  */
 function hacked_calculate_project_data_drush($projects, $force = FALSE, $redirect = NULL) {
-  include_once DRUPAL_ROOT . '/includes/batch.inc';
+  include_once DRUPAL_ROOT . '/core/includes/batch.inc';
 
   // Try to get the report form cache if we can.
-  $cache = cache_get('hacked:drush:full-report', HACKED_CACHE_TABLE);
+  $cache = \Drupal::cache(HACKED_CACHE_TABLE)->get('hacked:drush:full-report');
   if (!empty($cache->data) && !$force) {
     return $cache->data;
   }
@@ -113,7 +113,7 @@ function hacked_calculate_project_data_drush($projects, $force = FALSE, $redirec
   drush_print('Done.');
 
   // Now we can get the data from the cache.
-  $cache = cache_get('hacked:drush:full-report', HACKED_CACHE_TABLE);
+  $cache = \Drupal::cache(HACKED_CACHE_TABLE)->get('hacked:drush:full-report');
   if (!empty($cache->data)) {
     return $cache->data;
   }
@@ -127,7 +127,7 @@ function hacked_build_report_batch_finished_drush($success, $results, $operation
     // Sort the results.
     usort($results['report'], '_hacked_project_report_sort_by_status');
     // Store them.
-    cache_set('hacked:drush:full-report', $results['report'], HACKED_CACHE_TABLE, strtotime('+1 day'));
+    \Drupal::cache(HACKED_CACHE_TABLE)->set('hacked:drush:full-report', $results['report'], strtotime('+1 day'));
   }
 }
 
@@ -208,7 +208,7 @@ function drush_hacked_lock_modified() {
       switch ($project['status']) {
         case HACKED_STATUS_HACKED:
           $project_ob = NULL;
-          $project_ob = hacked_project_load($project['project_name']);
+          $project_ob = new Drupal\hacked\hackedProject($project['project_name']);
           $lockfile = $project_ob->file_get_location('local', '.drush-lock-update');
           if (!file_exists($lockfile)) {
             drush_op('file_put_contents', $lockfile, dt("Locked: modified."));
@@ -262,7 +262,7 @@ function drush_hacked_drush_command_validate($short_name = '') {
     return drush_set_error('HACKED_PROJECT_NOT_FOUND', dt('A valid project must be specified', array('@project' => $short_name)));
   }
 
-  $project = hacked_project_load($short_name);
+  $project = new Drupal\hacked\hackedProject($short_name);
   $project->identify_project();
   if (!$project->project_identified) {
     return drush_set_error('HACKED_PROJECT_NOT_FOUND', dt('Could not find project: @project', array('@project' => $short_name)));
@@ -277,7 +277,7 @@ function drush_hacked_drush_command_validate($short_name = '') {
  * otherwise just the changed and deleted files are shown.
  */
 function drush_hacked_details($short_name) {
-  $project = hacked_project_load($short_name);
+  $project = new Drupal\hacked\hackedProject($short_name);
   $report = $project->compute_details();
 
   drush_print(dt('Details for project: @name', array('@name' => $project->title())));
@@ -345,13 +345,15 @@ function drush_hacked_diff_validate($short_name = '') {
  * otherwise just the changed and deleted files are shown.
  */
 function drush_hacked_diff($short_name) {
-  $project = hacked_project_load($short_name);
+  $project = new Drupal\hacked\hackedProject($short_name);
 
   $local_location = $project->file_get_location('local', '');
   $clean_location = $project->file_get_location('remote', '');
 
   // If the hasher is our ignore line endings one, then ignore line endings.
-  if (variable_get('hacked_selected_file_hasher', HACKED_DEFAULT_FILE_HASHER) == 'hacked_ignore_line_endings') {
+  $hasher = \Drupal::config('hacked.settings')->get('selected_file_hasher');
+  $hasher = is_null($hasher) ? HACKED_DEFAULT_FILE_HASHER : $hasher;
+  if ($hasher == 'hacked_ignore_line_endings') {
     $default_options = '-uprb';
   }
   else {
