@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\hacked\hackedProjectWebFilesDownloader.
- */
-
 namespace Drupal\hacked;
 
 use Drupal\Component\Utility\Unicode;

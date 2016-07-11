@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\hacked\hackedProjectWebDevDownloader.
- */
-
 namespace Drupal\hacked;
 
 use Exception;

@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\hacked\Controller\HackedDiffController.
- */
-
 namespace Drupal\hacked\Controller;
 
 use Drupal\diff\EntityComparisonBase;

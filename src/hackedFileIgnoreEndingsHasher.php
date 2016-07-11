@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\hacked\hackedFileIgnoreEndingsHasher.
- */
-
 namespace Drupal\hacked;
 
 /**

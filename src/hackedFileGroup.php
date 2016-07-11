@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\hacked\hackedFileGroup.
- */
-
 namespace Drupal\hacked;
 
 use Drupal\Core\StringTranslation\StringTranslationTrait;

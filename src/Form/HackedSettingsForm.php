@@ -1,8 +1,4 @@
 <?php
-/**
- * @file
- * Contains \Drupal\hacked\Form\HackedSettingsForm.
- */
 
 namespace Drupal\hacked\Form;
 

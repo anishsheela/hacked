@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\hacked\ParamConverter\HackedProjectConverter.
- */
-
 namespace Drupal\hacked\ParamConverter;
 
 use Drupal\Core\ParamConverter\ParamConverterInterface;

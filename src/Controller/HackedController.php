@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\hacked\Controller\HackedController.
- */
-
 namespace Drupal\hacked\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
