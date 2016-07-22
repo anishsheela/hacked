@@ -9,7 +9,7 @@ class hackedProjectWebDownloader {
   /**
    * Constructor, pass in the project this downloaded is expected to download.
    */
-  function hackedProjectWebDownloader(&$project) {
+  function __construct(&$project) {
     $this->project = $project;
   }
 

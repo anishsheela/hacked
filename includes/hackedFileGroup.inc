@@ -15,7 +15,7 @@ class hackedFileGroup {
   /**
    * Constructor.
    */
-  function hackedFileGroup($base_path) {
+  function __construct($base_path) {
     $this->base_path = $base_path;
     $this->hasher = hacked_get_file_hasher();
   }

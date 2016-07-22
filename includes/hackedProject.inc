@@ -37,7 +37,7 @@ class hackedProject {
   /**
    * Constructor.
    */
-  function hackedProject($name) {
+  function __construct($name) {
     $this->name = $name;
     $this->remote_files_downloader = new hackedProjectWebFilesDownloader($this);
   }

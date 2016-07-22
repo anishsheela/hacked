@@ -9,7 +9,7 @@ class hackedProjectWebCVSDownloader extends hackedProjectWebDownloader {
 
   var $base_filename = '';
 
-  function hackedProjectWebCVSDownloader(&$project, $base_filename) {
+  function __construct(&$project, $base_filename) {
     parent::hackedProjectWebDownloader($project);
     $this->base_filename = $base_filename;
   }
