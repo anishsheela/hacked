@@ -2,14 +2,46 @@
 
 namespace Drupal\hacked\Controller;
 
-use Drupal\diff\EntityComparisonBase;
+use Drupal\Core\Controller\ControllerBase;
+use Drupal\diff\DiffEntityComparison;
 use Drupal\hacked\hackedFileHasher;
 use Drupal\hacked\hackedProject;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Controller routines for hacked routes.
  */
-class HackedDiffController extends EntityComparisonBase {
+class HackedDiffController extends ControllerBase {
+
+  /**
+   * Wrapper object for writing/reading configuration from diff.plugins.yml
+   */
+  protected $config;
+
+  /**
+   * The diff entity comparison service.
+   */
+  protected $entityComparison;
+
+  /**
+   * Constructs a HackedDiffController object.
+   *
+   * @param DiffEntityComparison $entity_comparison
+   *   DiffEntityComparison service.
+   */
+  public function __construct(DiffEntityComparison $entity_comparison) {
+    $this->config = $this->config('diff.settings');
+    $this->entityComparison = $entity_comparison;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('diff.entity_comparison')
+    );
+  }
 
   /**
    * Shows a diff report for a specific file in a project.
@@ -50,7 +82,7 @@ class HackedDiffController extends EntityComparisonBase {
       $build = [
         '#theme'    => 'table',
         '#header'   => [t('Original'), '', t('Current'), ''],
-        '#rows'     => $this->getRows($hasher->fetch_lines($original_file), $hasher->fetch_lines($installed_file), TRUE),
+        '#rows'     => $this->entityComparison->getRows($hasher->fetch_lines($original_file), $hasher->fetch_lines($installed_file), TRUE),
       ];
 
       // Add the CSS for the diff.
