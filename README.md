@@ -45,6 +45,14 @@ The "Settings" tab allows two options: "Ignore line endings" which is helpful if
 
 The process of fetching and comparing with clean projects can be a time-consuming one, so give it some time to load on the first run.
 
+## Drush
+
+Drush commands:
+
+* `hacked-details (hd)`: Show the Hacked! report about a specific project.
+* `hacked-diff`: Output a unified diff of the project specified.
+* `hacked-list-projects`: List all projects that can be analysed by Hacked!
+
 
 ## Maintainers
 
