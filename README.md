@@ -48,9 +48,9 @@ The process of fetching and comparing with clean projects can be a time-consumin
 
 ## Maintainers
 
-* Stuart Clark (Deciphered) - https://www.drupal.org/u/deciphered
-* Steven Jones - https://www.drupal.org/u/steven-jones
-* Colan Schwartz - https://www.drupal.org/u/colan
+* [Stuart Clark (Deciphered)](https://www.drupal.org/u/deciphered)
+* [Steven Jones](https://www.drupal.org/u/steven-jones)
+* [Colan Schwartz (colan)](https://www.drupal.org/u/colan)
 
 This project is currently maintained by developers at:
 
