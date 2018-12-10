@@ -1,5 +1,6 @@
-CONTENTS OF THIS FILE
----------------------
+# Hacked! Documentation
+
+## Table of Contents
 
 * Introduction
 * Requirements
@@ -9,37 +10,32 @@ CONTENTS OF THIS FILE
 * Maintainers
 
 
-INTRODUCTION
-------------
+## Introduction
 
-The Hacked! module scans the currently installed Drupal contributed modules and themes, re-downloads them and determines if they have been changed. Changes are marked clearly and if the Diff module is installed then Hacked! will allow you to see the exact lines that have changed.
+The Hacked! module scans the currently installed Drupal contributed modules and themes, re-downloads them and determines if they have been changed.  Changes are marked clearly and if the Diff module is installed then Hacked! will allow you to see the exact lines that have changed.
 
 * For a full description of the module visit
-https://www.drupal.org/node/667576
-
+[https://www.drupal.org/node/667576](https://www.drupal.org/node/667576).
 * To submit bug reports and feature suggestions, or to track changes visit
-https://www.drupal.org/project/issues/hacked
+[https://www.drupal.org/project/issues/hacked](https://www.drupal.org/project/issues/hacked).
 
 
-REQUIREMENTS
-------------
+## Requirements
 
 This module does not require any additional modules outside of Drupal core.
 
-RECOMMENDED MODULES
--------------------
 
-Diff - https://www.drupal.org/project/diff
+## Recommended Modules
 
-
-INSTALLATION
-------------
-
-Install the Hacked! module as you would normally install a contributed Drupal module. Visit https://www.drupal.org/docs/8/extending-drupal-8/installing-contributed-modules-find-import-enable-configure-drupal-8 for further information.
+* [Diff](https://www.drupal.org/project/diff)
 
 
-CONFIGURATION
--------------
+## Installation
+
+Install the Hacked! module as you would normally install a contributed Drupal module. Visit [Installing Drupal 8 Modules](https://www.drupal.org/docs/8/extending-drupal-8/installing-contributed-modules-find-import-enable-configure-drupal-8) for further information.
+
+
+## Configuration
 
 1. Install the Hacked! module.
 2. Enable the Hacked! module.
@@ -50,9 +46,8 @@ The "Settings" tab allows two options: "Ignore line endings" which is helpful if
 The process of fetching and comparing with clean projects can be a time-consuming one, so give it some time to load on the first run.
 
 
-MAINTAINERS
------------
-
+## Maintainers
+f
 * Stuart Clark (Deciphered) - https://www.drupal.org/u/deciphered
 * Steven Jones - https://www.drupal.org/u/steven-jones
 
