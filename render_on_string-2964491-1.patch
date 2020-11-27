@@ -1,0 +1,22 @@
+diff --git a/src/hackedProjectWebDevDownloader.php b/src/hackedProjectWebDevDownloader.php
+index 1717995..cc1d39f 100644
+--- a/src/hackedProjectWebDevDownloader.php
++++ b/src/hackedProjectWebDevDownloader.php
+@@ -71,7 +71,7 @@ class hackedProjectWebDevDownloader extends hackedProjectWebDownloader {
+       $this->git_clone($giturl, $destination, $branch);
+     }
+     catch (Exception $e) {
+-      \Drupal::logger('hacked')->error($e->getMessage()->render());
++      \Drupal::logger('hacked')->error($e->getMessage());
+       return FALSE;
+     }
+ 
+@@ -80,7 +80,7 @@ class hackedProjectWebDevDownloader extends hackedProjectWebDownloader {
+       $this->git_checkout($destination, $branch, $timestamp);
+     }
+     catch (Exception $e) {
+-      \Drupal::logger('hacked')->error($e->getMessage()->render());
++      \Drupal::logger('hacked')->error($e->getMessage());
+       return FALSE;
+     }
+ 

@@ -72,7 +72,7 @@ class hackedProjectWebDevDownloader extends hackedProjectWebDownloader {
       $this->git_clone($giturl, $destination, $branch);
     }
     catch (Exception $e) {
-      \Drupal::logger('hacked')->error($e->getMessage()->render());
+      \Drupal::logger('hacked')->error($e->getMessage());
       return FALSE;
     }
 
@@ -81,7 +81,7 @@ class hackedProjectWebDevDownloader extends hackedProjectWebDownloader {
       $this->git_checkout($destination, $branch, $timestamp);
     }
     catch (Exception $e) {
-      \Drupal::logger('hacked')->error($e->getMessage()->render());
+      \Drupal::logger('hacked')->error($e->getMessage());
       return FALSE;
     }
 
