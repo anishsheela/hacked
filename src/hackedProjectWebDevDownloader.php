@@ -2,6 +2,7 @@
 
 namespace Drupal\hacked;
 
+use Drupal\Core\File\FileSystemInterface;
 use Exception;
 
 /**
@@ -106,8 +107,8 @@ class hackedProjectWebDevDownloader extends hackedProjectWebDownloader {
     $basename = basename($path);
 
     // Prepare the download location.
-    file_prepare_directory($dirname, FILE_CREATE_DIRECTORY);
-    file_prepare_directory($path, FILE_CREATE_DIRECTORY);
+    \Drupal::service('file_system')->prepareDirectory($dirname, FileSystemInterface::CREATE_DIRECTORY);
+    \Drupal::service('file_system')->prepareDirectory($path, FileSystemInterface::CREATE_DIRECTORY);
 
     // Perform the clone operation, and leave us in the appropriate branch.
     exec("cd $dirname; $git_cmd clone --branch $branch $giturl $basename", $output_lines, $return_value);

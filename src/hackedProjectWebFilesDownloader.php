@@ -2,6 +2,7 @@
 
 namespace Drupal\hacked;
 
+use Drupal\Core\File\FileSystemInterface;
 use Drupal\Component\Utility\Unicode;
 use Exception;
 
@@ -35,7 +36,7 @@ class hackedProjectWebFilesDownloader extends hackedProjectWebDownloader {
     }
 
     // Build the destination folder tree if it doesn't already exists.
-    if (!file_prepare_directory($dir, FILE_CREATE_DIRECTORY) && !mkdir($dir, 0775, TRUE)) {
+    if (!\Drupal::service('file_system')->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY) && !mkdir($dir, 0775, TRUE)) {
       $message = $this->t('Failed to create temp directory: %dir', ['%dir' => $dir]);
       \Drupal::logger('hacked')->error($message->render());
       return FALSE;
@@ -91,7 +92,7 @@ class hackedProjectWebFilesDownloader extends hackedProjectWebDownloader {
       mkdir($cache_directory);
     }
 
-    return system_retrieve_file($url, $local, FALSE, FILE_EXISTS_REPLACE);
+    return system_retrieve_file($url, $local, FALSE, FileSystemInterface::EXISTS_REPLACE);
   }
 
   /**
@@ -116,7 +117,7 @@ class hackedProjectWebFilesDownloader extends hackedProjectWebDownloader {
     // from a later release).
     $files = $archiver->listContents();
     // Unfortunately, we can only use the directory name for this. :(
-    $project = Unicode::substr($files[0], 0, -1);
+    $project = mb_substr($files[0], 0, -1);
     $extract_location = $directory . '/' . $project;
     if (file_exists($extract_location)) {
       file_unmanaged_delete_recursive($extract_location);

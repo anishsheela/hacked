@@ -2,6 +2,7 @@
 
 namespace Drupal\hacked;
 
+use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 
 /**
@@ -32,12 +33,12 @@ class hackedProjectWebDownloader {
       $namespace = $reflect->getShortName();
     }
     $segments = [
-      file_directory_temp(),
+      \Drupal::service('file_system')->getTempDirectory(),
       'hacked-cache-' . get_current_user(),
       $namespace,
     ];
     $dir = implode('/', array_filter($segments));
-    if (!file_prepare_directory($dir, FILE_CREATE_DIRECTORY) && !mkdir($dir, 0775, TRUE)) {
+    if (!\Drupal::service('file_system')->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY) && !mkdir($dir, 0775, TRUE)) {
       $message = $this->t('Failed to create temp directory: %dir', array('%dir' => $dir));
       \Drupal::logger('hacked')->error($message);
       return FALSE;
@@ -55,7 +56,7 @@ class hackedProjectWebDownloader {
 
     $dir = $this->get_temp_directory() . "/$type/$name";
     // Build the destination folder tree if it doesn't already exists.
-    if (!file_prepare_directory($dir, FILE_CREATE_DIRECTORY) && !mkdir($dir, 0775, TRUE)) {
+    if (!\Drupal::service('file_system')->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY) && !mkdir($dir, 0775, TRUE)) {
       $message = $this->t('Failed to create temp directory: %dir', ['%dir' => $dir]);
       \Drupal::logger('hacked')->error($message);
       return FALSE;
