@@ -125,7 +125,7 @@ class hackedProject {
     $version = $this->existing_version;
 
     // Assume we have a dev version if the string ends with "-dev".
-    return (substr_compare($version, '-dev', -4, 4) === 0) ? TRUE : FALSE;
+    return (strlen($version) < 4 || substr_compare($version, '-dev', -4, 4) !== 0) ? FALSE : TRUE;
   }
 
   /**
