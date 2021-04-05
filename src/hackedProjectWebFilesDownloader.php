@@ -107,7 +107,7 @@ class hackedProjectWebFilesDownloader extends hackedProjectWebDownloader {
    * @throws Exception on failure.
    */
   function archive_extract($file, $directory) {
-    $archiver = archiver_get_archiver($file);
+    $archiver = \Drupal::service('plugin.manager.archiver')->getArchiverByFile($file);
     if (!$archiver) {
       throw new Exception(t('Cannot extract %file, not a valid archive.', ['%file' => $file]));
     }
@@ -120,7 +120,7 @@ class hackedProjectWebFilesDownloader extends hackedProjectWebDownloader {
     $project = mb_substr($files[0], 0, -1);
     $extract_location = $directory . '/' . $project;
     if (file_exists($extract_location)) {
-      file_unmanaged_delete_recursive($extract_location);
+      FileSystemInterface::deleteRecursive($extract_location);
     }
 
     $archiver->extract($directory);

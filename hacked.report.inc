@@ -4,6 +4,8 @@ use Drupal\Component\Utility\Unicode;
 use Drupal\Core\Link;
 use Drupal\Core\Url;
 use Drupal\hacked\hackedProject;
+use Drupal\update\UpdateManagerInterface;
+use Drupal\update\UpdateFetcherInterface;
 
 /**
  * Batch callback to build the hacked report.
@@ -84,18 +86,18 @@ function hacked_preprocess_update_project_status(&$variables) {
       case HACKED_STATUS_UNHACKED:
         $uri = 'core/misc/icons/73b355/check.svg';
         $text = t('Unchanged');
-        $project['status'] = UPDATE_CURRENT;
+        $project['status'] = UpdateManagerInterface::CURRENT;
         break;
       case HACKED_STATUS_HACKED:
         $uri = 'core/misc/icons/e32700/error.svg';
         $text = t('Changed!');
-        $project['status'] = UPDATE_NOT_CHECKED;
+        $project['status'] = UpdateFetcherInterface::NOT_CHECKED;
         break;
       case HACKED_STATUS_UNCHECKED:
       default:
         $uri = 'core/misc/icons/e29700/warning.svg';
         $text = t('Unchecked');
-        $project['status'] = UPDATE_NOT_CHECKED;
+        $project['status'] = UpdateFetcherInterface::NOT_CHECKED;
         break;
     }
 

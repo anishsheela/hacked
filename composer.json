@@ -1,0 +1,14 @@
+{
+  "name": "anishsheela/hacked",
+  "type": "drupal-module",
+  "description": "Hacked module finder.",
+  "keywords": ["Drupal"],
+  "homepage": "https://github.com/anishsheela/hacked",
+  "license": "GPLv3",
+  "minimum-stability": "dev",
+  "extra": {
+    "branch-alias": {
+      "8.x-2.x": "2.x-dev"
+    }
+  }
+}
